@@ -14,18 +14,29 @@ for introducing you should do like this :
     if you want i will be happy that you add more features in this project , Thank you
 """
 from django.utils.deprecation import MiddlewareMixin
-from django.core.urlresolvers import reverse
 from django.http import Http404
-class BlockerAdminUrl(MiddlewareMixin):
-    
+
+class AdminPanelBlock(MiddlewareMixin):
     def process_request(self,request):
-        if request.path.startswith(reverse("admin:index")):
+        """
+            this function calling before calling view \n
+        """
+        self.check_user_access()
+
+    def check_user_access(self,request):
+        """
+
+            this function checks path if it starts with /admin , it means a user wants to access in admin panel \n
+
+            if user be admin or staff it doesnt have problem but else we dont allow him/her to access
+
+        """
+        if request.path.startswith("/admin"):
             user = request.user
             if user.is_authenticated:
                 if not user.is_staff:
-                    # in here user is login but is not staff and cant enter to admin page
-                    # you can replace Http404 with another code
-                    return Http404()
+                    raise Http404()
                 return None
-            else:
-                return Http404()
+            raise Http404()
+        return None
+
